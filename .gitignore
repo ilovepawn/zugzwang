@@ -1,0 +1,6 @@
+syzygy/
+__pycache__/
+*.pyc
+.venv/
+.env
+.claude/
