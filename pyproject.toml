@@ -13,7 +13,8 @@ dependencies = [
     "sqlalchemy (>=2.0.49,<3.0.0)",
     "pymysql (>=1.1.2,<2.0.0)",
     "alembic (>=1.18.4,<2.0.0)",
-    "pydantic-settings (>=2.14.0,<3.0.0)"
+    "pydantic-settings (>=2.14.0,<3.0.0)",
+    "cryptography (>=47.0.0,<48.0.0)"
 ]
 
 
