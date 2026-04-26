@@ -56,4 +56,4 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry ru
 - **Tablebase startup check**: `app/service/tablebase.py` validates that syzygy files exist before opening. Missing files cause a clear error message and exit.
 - **Input validation**: `MoveRequest.fen` (max 100 chars), `MoveRequest.move` (max 5 chars). `MoveResponse.status` and `reason` use `Literal` types.
 - **Commit messages**: English, conventional commit style (feat/fix/chore/docs).
-- **License**: GPL-3.0 (required by python-chess dependency).
+- **License**: GPL-3.0-or-later (required by python-chess dependency).

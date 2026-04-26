@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![License](https://img.shields.io/badge/License-GPL--3.0-blue)](LICENSE)
+[![License](https://img.shields.io/badge/License-GPL--3.0--or--later-blue)](LICENSE)
 
 [English](README.md)
 
@@ -150,6 +150,6 @@ zugzwang/
 
 ## 라이선스
 
-이 프로젝트는 **GPL-3.0 라이선스** 하에 배포됩니다 — 자세한 내용은 [LICENSE](LICENSE) 파일을 참고하세요.
+이 프로젝트는 **GPL-3.0-or-later 라이선스** 하에 배포됩니다 — 자세한 내용은 [LICENSE](LICENSE) 파일을 참고하세요.
 
-[python-chess](https://github.com/niklasf/python-chess) 의존성으로 인해 GPL-3.0이 적용됩니다.
+[python-chess](https://github.com/niklasf/python-chess) 의존성으로 인해 GPL-3.0-or-later가 적용됩니다.

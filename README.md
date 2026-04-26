@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![License](https://img.shields.io/badge/License-GPL--3.0-blue)](LICENSE)
+[![License](https://img.shields.io/badge/License-GPL--3.0--or--later-blue)](LICENSE)
 
 [한국어](README.ko.md)
 
@@ -150,6 +150,6 @@ zugzwang/
 
 ## License
 
-This project is licensed under the **GPL-3.0 License** — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GPL-3.0-or-later License** — see the [LICENSE](LICENSE) file for details.
 
-GPL-3.0 is required due to the [python-chess](https://github.com/niklasf/python-chess) dependency.
+GPL-3.0-or-later is required due to the [python-chess](https://github.com/niklasf/python-chess) dependency.
