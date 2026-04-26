@@ -51,5 +51,9 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry ru
 - **MySQL collation**: The `fen` column must use `utf8mb4_bin`, not the MySQL default `utf8mb4_0900_ai_ci`. The default is case-insensitive and treats `K` (White King) and `k` (Black King) as identical, causing false duplicate key errors.
 - **Docker port mapping**: MySQL container maps `3307:3306` because the host may already have MySQL on 3306. Inside Docker Compose, services connect via `db:3306`.
 - **WDL values** from Syzygy: 2 (win), 1 (cursed win), 0 (draw), -1 (blessed loss), -2 (loss). Only positions with WDL=2 are stored. The `/move` endpoint checks WDL from the side-to-move's perspective after the user's move.
+- **Docker startup**: `entrypoint.sh` runs `alembic upgrade head` before uvicorn. No need to manually run migrations.
+- **DB connection pool**: `pool_pre_ping=True` is set to handle stale MySQL connections after idle periods.
+- **Tablebase startup check**: `app/service/tablebase.py` validates that syzygy files exist before opening. Missing files cause a clear error message and exit.
+- **Input validation**: `MoveRequest.fen` (max 100 chars), `MoveRequest.move` (max 5 chars). `MoveResponse.status` and `reason` use `Literal` types.
 - **Commit messages**: English, conventional commit style (feat/fix/chore/docs).
 - **License**: GPL-3.0 (required by python-chess dependency).
