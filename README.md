@@ -1,8 +1,8 @@
 # Zugzwang
 
-[![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![License](https://img.shields.io/badge/License-GPL--3.0--or--later-blue)](LICENSE)
 
 [한국어](README.ko.md)
@@ -32,7 +32,7 @@ The opponent's moves are sourced directly from Syzygy tablebases, meaning every 
 |---|---|
 | Framework | FastAPI |
 | Chess Engine | python-chess + Syzygy tablebase |
-| Database | MySQL 8.0 |
+| Database | MySQL 8.4 LTS |
 | ORM / Migration | SQLAlchemy + Alembic |
 | Package Manager | Poetry |
 | Infrastructure | Docker + Docker Compose |
@@ -43,7 +43,7 @@ The opponent's moves are sourced directly from Syzygy tablebases, meaning every 
 
 ### Prerequisites
 
-- Python 3.14+
+- Python 3.13+
 - Docker & Docker Compose
 - [Syzygy 3-4-5 tablebase files](https://tablebase.lichess.ovh/tables/standard/) in `syzygy/`
 

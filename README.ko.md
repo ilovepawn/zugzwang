@@ -1,8 +1,8 @@
 # Zugzwang
 
-[![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![License](https://img.shields.io/badge/License-GPL--3.0--or--later-blue)](LICENSE)
 
 [English](README.md)
@@ -32,7 +32,7 @@
 |---|---|
 | 프레임워크 | FastAPI |
 | 체스 엔진 | python-chess + Syzygy tablebase |
-| 데이터베이스 | MySQL 8.0 |
+| 데이터베이스 | MySQL 8.4 LTS |
 | ORM / 마이그레이션 | SQLAlchemy + Alembic |
 | 패키지 매니저 | Poetry |
 | 인프라 | Docker + Docker Compose |
@@ -43,7 +43,7 @@
 
 ### 사전 요구사항
 
-- Python 3.14+
+- Python 3.13+
 - Docker & Docker Compose
 - [Syzygy 3-4-5 테이블베이스 파일](https://tablebase.lichess.ovh/tables/standard/)을 `syzygy/` 디렉토리에 배치
 

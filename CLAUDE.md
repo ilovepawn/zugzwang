@@ -55,5 +55,6 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry ru
 - **DB connection pool**: `pool_pre_ping=True` is set to handle stale MySQL connections after idle periods.
 - **Tablebase startup check**: `app/service/tablebase.py` validates that syzygy files exist before opening. Missing files cause a clear error message and exit.
 - **Input validation**: `MoveRequest.fen` (max 100 chars), `MoveRequest.move` (max 5 chars). `MoveResponse.status` and `reason` use `Literal` types.
+- **`pymysql[rsa]` extras**: MySQL 8.x default authentication (`caching_sha2_password`) requires `cryptography`, which `pymysql` only pulls in via the `[rsa]` extras. Do not strip the brackets when editing `pyproject.toml`.
 - **Commit messages**: English, conventional commit style (feat/fix/chore/docs).
 - **License**: GPL-3.0-or-later (required by python-chess dependency).
