@@ -9,13 +9,11 @@ class CombinationResponse(BaseModel):
 
 
 class PositionResponse(BaseModel):
-    position_id: int
     combination: str
     fen: str
 
 
 class MoveRequest(BaseModel):
-    position_id: int
     fen: str = Field(max_length=100)
     move: str = Field(max_length=5)
 

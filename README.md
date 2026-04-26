@@ -86,7 +86,6 @@ Returns a random winning position for the given combination.
 
 ```json
 {
-  "position_id": 42,
   "combination": "KQK",
   "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1"
 }
@@ -99,7 +98,6 @@ Submit a move and receive the judgment + opponent's response.
 **Request**
 ```json
 {
-  "position_id": 42,
   "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1",
   "move": "g6d3"
 }

@@ -34,7 +34,6 @@ def get_random_position(combination: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No positions found for this combination")
 
     return {
-        "position_id": position.id,
         "combination": position.combination,
         "fen": position.fen,
     }
