@@ -1,57 +1,88 @@
 # Zugzwang
 
-Syzygy 테이블베이스 기반 체스 엔드게임 트레이너 API
+[![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![License](https://img.shields.io/badge/License-GPL--3.0-blue)](LICENSE)
 
-## Overview
+[한국어](README.ko.md)
 
-5기물 이하 Syzygy 테이블베이스를 활용하여 엔드게임 포지션을 제공하고, 사용자가 체크메이트까지 수를 두는 훈련 기능을 제공하는 백엔드 API 서버입니다.
+> *Zugzwang (n.)* — A situation in chess where the obligation to make a move is a disadvantage.
 
-- 플레이어는 항상 백으로 플레이
-- 상대(흑)는 테이블베이스 기반 최선의 수로 응수
-- 승리를 놓치면(무승부/패배 포지션) 즉시 실패 처리
+**Endgame Trainer API** for the [ilovepawn](https://github.com/ilovepawn) chess platform, powered by Syzygy endgame tablebases.
+
+Train your endgame technique against a perfectly playing opponent. Every response is mathematically optimal — backed by 5-piece Syzygy tablebases containing over 14,000 pre-validated winning positions.
+
+---
+
+## How It Works
+
+1. Pick an endgame combination (e.g. King + Rook vs King)
+2. Receive a random winning position — you play as **White**
+3. Make your move — the opponent responds with the **strongest defense**
+4. Deliver checkmate to win, or lose the advantage and fail
+
+The opponent's moves are sourced directly from Syzygy tablebases, meaning every defense is the absolute best possible. If you can win here, you can win anywhere.
+
+---
 
 ## Tech Stack
 
-- **Python** + **FastAPI**
-- **MySQL** (Docker)
-- **python-chess** + **Syzygy tablebase**
-- **SQLAlchemy** + **Alembic**
-- **Poetry**
+| Layer | Technology |
+|---|---|
+| Framework | FastAPI |
+| Chess Engine | python-chess + Syzygy tablebase |
+| Database | MySQL 8.0 |
+| ORM / Migration | SQLAlchemy + Alembic |
+| Package Manager | Poetry |
+| Infrastructure | Docker + Docker Compose |
 
-## Setup
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.14+
+- Docker & Docker Compose
+- [Syzygy 3-4-5 tablebase files](https://tablebase.lichess.ovh/tables/standard/) in `syzygy/`
+
+### Run
 
 ```bash
-# 의존성 설치
+# Install dependencies
 poetry install
 
-# Docker 실행 (MySQL + API)
+# Start MySQL + API server
 docker compose up -d
 
-# DB 마이그레이션
+# Run database migration
 DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
-poetry run alembic upgrade head
+  poetry run alembic upgrade head
 
-# 포지션 생성 (예: KQK 1000개)
+# Generate positions (combination, count)
 DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
-poetry run python scripts/generate.py KQK 1000
+  poetry run python scripts/generate.py KQK 1000
 ```
 
-## API
+---
 
-### GET /combinations
+## API Reference
 
-조합 목록 조회
+### `GET /combinations`
+
+Returns available endgame combinations with position counts.
 
 ```json
 [
-  {"combination": "KQK", "count": 1000},
-  {"combination": "KRK", "count": 1000}
+  { "combination": "KQK", "count": 1000 },
+  { "combination": "KRK", "count": 1000 }
 ]
 ```
 
-### GET /positions/random?combination=KQK
+### `GET /positions/random?combination={combo}`
 
-랜덤 포지션 제공
+Returns a random winning position for the given combination.
 
 ```json
 {
@@ -61,11 +92,11 @@ poetry run python scripts/generate.py KQK 1000
 }
 ```
 
-### POST /move
+### `POST /move`
 
-착수 + 판정 + 상대 응수
+Submit a move and receive the judgment + opponent's response.
 
-Request:
+**Request**
 ```json
 {
   "position_id": 42,
@@ -74,22 +105,51 @@ Request:
 }
 ```
 
-Response:
-```json
-{"status": "continue", "fen": "...", "opponent_move": "d2c1"}
-{"status": "checkmate", "fen": "..."}
-{"status": "failed", "fen": "...", "reason": "draw"}
-```
+**Response**
+
+| status | Description |
+|---|---|
+| `continue` | Valid winning move. Includes `opponent_move` and updated `fen`. |
+| `checkmate` | Checkmate delivered. You win. |
+| `failed` | Winning advantage lost. Includes `reason`: `draw`, `lost`, or `stalemate`. |
+
+---
 
 ## Supported Combinations
 
-| Category | Combinations |
-|---|---|
-| Basic Checkmate | KQK, KRK, KBBK, KBNK, KRRK, KQRK |
-| Queen vs Piece | KQKR, KQKB, KQKN |
-| Rook vs Piece | KRKB, KRKN |
-| Pawn Endgame | KPK, KPKP, KPPKP |
+| Category | Combinations | Description |
+|---|---|---|
+| Basic Checkmate | KQK, KRK, KBBK, KBNK, KRRK, KQRK | Deliver checkmate with major/minor pieces |
+| Queen vs Piece | KQKR, KQKB, KQKN | Win with queen against a single defender |
+| Rook vs Piece | KRKB, KRKN | Win with rook against a single defender |
+| Pawn Endgame | KPK, KPKP, KPPKP | Promote and win in pawn endgames |
+
+---
+
+## Project Structure
+
+```
+zugzwang/
+├── app/
+│   ├── api/           # API endpoints
+│   ├── model/         # Database models
+│   ├── schema/        # Request/Response DTOs
+│   ├── service/       # Tablebase probing logic
+│   ├── config.py      # Environment configuration
+│   ├── database.py    # Database connection
+│   └── main.py        # FastAPI entrypoint
+├── alembic/           # Database migrations
+├── scripts/           # Position generation script
+├── syzygy/            # Syzygy tablebase files (not tracked in git)
+├── docker-compose.yml
+├── Dockerfile
+└── pyproject.toml
+```
+
+---
 
 ## License
 
-GPL-3.0
+This project is licensed under the **GPL-3.0 License** — see the [LICENSE](LICENSE) file for details.
+
+GPL-3.0 is required due to the [python-chess](https://github.com/niklasf/python-chess) dependency.
