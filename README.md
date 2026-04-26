@@ -86,7 +86,7 @@ Returns a random winning position for the given combination.
 
 ```json
 {
-  "position_id": 42,
+  "positionId": 42,
   "combination": "KQK",
   "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1"
 }
@@ -98,7 +98,7 @@ Returns the endgame position with the given ID. Returns `404` if not found.
 
 ```json
 {
-  "position_id": 42,
+  "positionId": 42,
   "combination": "KQK",
   "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1"
 }
@@ -120,7 +120,7 @@ Submit a move and receive the judgment + opponent's response.
 
 | status | Description |
 |---|---|
-| `continue` | Valid winning move. Includes `opponent_move` and updated `fen`. |
+| `continue` | Valid winning move. Includes `opponentMove` and updated `fen`. |
 | `checkmate` | Checkmate delivered. You win. |
 | `failed` | Winning advantage lost. Includes `reason`: `draw`, `lost`, or `stalemate`. |
 

@@ -86,7 +86,7 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
 
 ```json
 {
-  "position_id": 42,
+  "positionId": 42,
   "combination": "KQK",
   "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1"
 }
@@ -98,7 +98,7 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
 
 ```json
 {
-  "position_id": 42,
+  "positionId": 42,
   "combination": "KQK",
   "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1"
 }
@@ -120,7 +120,7 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
 
 | status | 설명 |
 |---|---|
-| `continue` | 유효한 승리 수. `opponent_move`와 업데이트된 `fen` 포함. |
+| `continue` | 유효한 승리 수. `opponentMove`와 업데이트된 `fen` 포함. |
 | `checkmate` | 체크메이트 성공. |
 | `failed` | 승리 기회 상실. `reason`: `draw`, `lost`, `stalemate` 중 하나. |
 
