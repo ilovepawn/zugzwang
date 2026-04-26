@@ -712,6 +712,9 @@ files = [
     {file = "pymysql-1.1.2.tar.gz", hash = "sha256:4961d3e165614ae65014e361811a724e2044ad3ea3739de9903ae7c21f539f03"},
 ]
 
+[package.dependencies]
+cryptography = {version = "*", optional = true, markers = "extra == \"rsa\""}
+
 [package.extras]
 ed25519 = ["PyNaCl (>=1.4.0)"]
 rsa = ["cryptography"]
@@ -914,5 +917,5 @@ standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)
 
 [metadata]
 lock-version = "2.1"
-python-versions = "^3.14"
-content-hash = "6342d9dae9f1384dd2ba7fbee7660d028492fb6b474df33a634f155f8d507279"
+python-versions = "^3.13"
+content-hash = "934c8630734b339fa993a8c3f5769f1256a7f31404c0b371bd48e85bc097af90"
