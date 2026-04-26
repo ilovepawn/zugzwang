@@ -47,7 +47,7 @@ def make_move(req: MoveRequest):
         board = chess.Board(req.fen)
         if not board.is_valid():
             raise ValueError
-    except (ValueError, Exception):
+    except ValueError:
         raise HTTPException(status_code=400, detail="Invalid FEN")
 
     # 이미 종료된 포지션 체크
