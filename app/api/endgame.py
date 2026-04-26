@@ -42,7 +42,17 @@ def get_random_position(combination: str, db: Session = Depends(get_db)):
 
 @router.post("/move", response_model=MoveResponse)
 def make_move(req: MoveRequest):
-    board = chess.Board(req.fen)
+    # FEN 유효성 검증
+    try:
+        board = chess.Board(req.fen)
+        if not board.is_valid():
+            raise ValueError
+    except (ValueError, Exception):
+        raise HTTPException(status_code=400, detail="Invalid FEN")
+
+    # 이미 종료된 포지션 체크
+    if board.is_game_over():
+        raise HTTPException(status_code=400, detail="Game is already over")
 
     # 사용자 수 파싱
     try:
@@ -60,15 +70,25 @@ def make_move(req: MoveRequest):
     if board.is_checkmate():
         return MoveResponse(status="checkmate", fen=board.fen())
 
+    # 스테일메이트 확인
+    if board.is_stalemate():
+        return MoveResponse(status="failed", fen=board.fen(), reason="stalemate")
+
     # 테이블베이스로 WDL 조회 (흑 관점이므로 부호 반전)
-    wdl = probe_wdl(board)
+    try:
+        wdl = probe_wdl(board)
+    except KeyError:
+        raise HTTPException(status_code=400, detail="Position not found in tablebase")
+
     if wdl >= 0:
-        # 흑 관점에서 승리 또는 무승부 = 백이 승리를 놓침
         reason = "draw" if wdl == 0 else "lost"
         return MoveResponse(status="failed", fen=board.fen(), reason=reason)
 
     # 상대 최선의 수
     opponent_move = best_opponent_move(board)
+    if opponent_move is None:
+        raise HTTPException(status_code=500, detail="Failed to find opponent move")
+
     board.push(opponent_move)
 
     # 상대 수 후 스테일메이트 체크
