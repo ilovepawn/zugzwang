@@ -86,7 +86,6 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
 
 ```json
 {
-  "position_id": 42,
   "combination": "KQK",
   "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1"
 }
@@ -99,7 +98,6 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
 **요청**
 ```json
 {
-  "position_id": 42,
   "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1",
   "move": "g6d3"
 }
