@@ -1,7 +1,17 @@
+import os
+import sys
+
 import chess
 import chess.syzygy
 
 from app.config import settings
+
+if not os.path.isdir(settings.syzygy_path) or not any(
+    f.endswith((".rtbw", ".rtbz")) for f in os.listdir(settings.syzygy_path)
+):
+    print(f"ERROR: Syzygy tablebase files not found in '{settings.syzygy_path}'", file=sys.stderr)
+    print("Download from: https://tablebase.lichess.ovh/tables/standard/", file=sys.stderr)
+    sys.exit(1)
 
 tablebase = chess.syzygy.open_tablebase(settings.syzygy_path)
 
@@ -10,7 +20,7 @@ def probe_wdl(board: chess.Board) -> int:
     return tablebase.probe_wdl(board)
 
 
-def best_opponent_move(board: chess.Board) -> chess.Move:
+def best_opponent_move(board: chess.Board) -> chess.Move | None:
     """상대(흑) 입장에서 가장 오래 버티는 수를 선택."""
     best_move = None
     best_dtz = None
