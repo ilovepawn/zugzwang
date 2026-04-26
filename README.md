@@ -86,6 +86,19 @@ Returns a random winning position for the given combination.
 
 ```json
 {
+  "position_id": 42,
+  "combination": "KQK",
+  "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1"
+}
+```
+
+### `GET /positions/{position_id}`
+
+Returns the endgame position with the given ID. Returns `404` if not found.
+
+```json
+{
+  "position_id": 42,
   "combination": "KQK",
   "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1"
 }

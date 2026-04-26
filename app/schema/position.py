@@ -9,6 +9,7 @@ class CombinationResponse(BaseModel):
 
 
 class PositionResponse(BaseModel):
+    position_id: int
     combination: str
     fen: str
 

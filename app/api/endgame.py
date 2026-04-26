@@ -34,6 +34,21 @@ def get_random_position(combination: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No positions found for this combination")
 
     return {
+        "position_id": position.id,
+        "combination": position.combination,
+        "fen": position.fen,
+    }
+
+
+@router.get("/positions/{position_id}", response_model=PositionResponse)
+def get_position(position_id: int, db: Session = Depends(get_db)):
+    position = db.query(EndgamePosition).filter_by(id=position_id).first()
+
+    if not position:
+        raise HTTPException(status_code=404, detail="Position not found")
+
+    return {
+        "position_id": position.id,
         "combination": position.combination,
         "fen": position.fen,
     }

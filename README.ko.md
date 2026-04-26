@@ -86,6 +86,19 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
 
 ```json
 {
+  "position_id": 42,
+  "combination": "KQK",
+  "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1"
+}
+```
+
+### `GET /positions/{position_id}`
+
+지정한 ID의 엔드게임 포지션을 반환합니다. 존재하지 않으면 `404`를 반환합니다.
+
+```json
+{
+  "position_id": 42,
   "combination": "KQK",
   "fen": "8/8/4K1Q1/8/8/8/3k4/8 w - - 0 1"
 }
