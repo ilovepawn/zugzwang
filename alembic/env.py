@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 from app.config import settings
 from app.database import Base
+from app.model import EndgamePosition  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)
