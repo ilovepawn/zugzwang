@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from typing import Literal
+
+from pydantic import BaseModel, Field
 
 
 class CombinationResponse(BaseModel):
@@ -14,12 +16,12 @@ class PositionResponse(BaseModel):
 
 class MoveRequest(BaseModel):
     position_id: int
-    fen: str
-    move: str
+    fen: str = Field(max_length=100)
+    move: str = Field(max_length=5)
 
 
 class MoveResponse(BaseModel):
-    status: str
+    status: Literal["continue", "checkmate", "failed"]
     fen: str
     opponent_move: str | None = None
-    reason: str | None = None
+    reason: Literal["draw", "lost", "stalemate"] | None = None
