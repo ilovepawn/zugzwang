@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.endgame import router as endgame_router
 
@@ -8,6 +9,8 @@ app = FastAPI(
 )
 
 app.include_router(endgame_router)
+
+Instrumentator().instrument(app).expose(app)
 
 
 @app.get("/health")
