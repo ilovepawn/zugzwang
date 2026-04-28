@@ -42,6 +42,7 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry ru
 
 - `app/api/endgame.py` — Four endpoints: `GET /combinations`, `GET /positions/random`, `GET /positions/{position_id}`, `POST /move`
 - `app/service/tablebase.py` — Opens Syzygy tablebase at startup (module-level singleton). Provides `probe_wdl()` and `best_opponent_move()` which iterates all legal moves and picks the one with highest DTZ (longest defense)
+- `app/service/metrics.py` — Prometheus domain metrics: `tablebase_operation_seconds` Histogram (labeled by `operation`) and `endgame_move_total` Counter (labeled by `outcome`)
 - `app/model/position.py` — Single table `endgame_position` with `fen` column using `utf8mb4_bin` collation (case-sensitive, required because FEN uses case to distinguish White/Black pieces)
 - `scripts/generate.py` — Standalone script (uses pymysql directly, not SQLAlchemy ORM) that parses combination names like "KQK" or "KQKR" to determine piece placement, validates via tablebase, and inserts with `SELECT` dedup check before `INSERT`
 
@@ -56,5 +57,6 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry ru
 - **Tablebase startup check**: `app/service/tablebase.py` validates that syzygy files exist before opening. Missing files cause a clear error message and exit.
 - **Input validation**: `MoveRequest.fen` (max 100 chars), `MoveRequest.move` (max 5 chars). `MoveResponse.status` and `reason` use `Literal` types.
 - **`pymysql[rsa]` extras**: MySQL 8.x default authentication (`caching_sha2_password`) requires `cryptography`, which `pymysql` only pulls in via the `[rsa]` extras. Do not strip the brackets when editing `pyproject.toml`.
+- **Prometheus metrics**: `prometheus-fastapi-instrumentator` exposes `/metrics` and auto-collects HTTP request count/latency/in-progress. Custom domain metrics in `app/service/metrics.py`: `tablebase_operation_seconds` uses sub-millisecond buckets `(0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0)` because Syzygy probes complete in microseconds — the prometheus_client default buckets (starting at 5ms) collapse all measurements into one bucket and make quantiles meaningless. `endgame_move_total` is labeled by outcome (`checkmate`, `continue`, `stalemate`, `draw`, `lost`).
 - **Commit messages**: English, conventional commit style (feat/fix/chore/docs).
 - **License**: GPL-3.0-or-later (required by python-chess dependency).
