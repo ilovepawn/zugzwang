@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.model.position import EndgamePosition
 from app.schema.position import CombinationResponse, MoveRequest, MoveResponse, PositionResponse
+from app.service.metrics import endgame_move_total
 from app.service.tablebase import best_opponent_move, probe_wdl
 
 router = APIRouter()
@@ -82,10 +83,12 @@ def make_move(req: MoveRequest):
 
     # 체크메이트 확인
     if board.is_checkmate():
+        endgame_move_total.labels(outcome="checkmate").inc()
         return MoveResponse(status="checkmate", fen=board.fen())
 
     # 스테일메이트 확인
     if board.is_stalemate():
+        endgame_move_total.labels(outcome="stalemate").inc()
         return MoveResponse(status="failed", fen=board.fen(), reason="stalemate")
 
     # 테이블베이스로 WDL 조회 (흑 관점이므로 부호 반전)
@@ -96,6 +99,7 @@ def make_move(req: MoveRequest):
 
     if wdl >= 0:
         reason = "draw" if wdl == 0 else "lost"
+        endgame_move_total.labels(outcome=reason).inc()
         return MoveResponse(status="failed", fen=board.fen(), reason=reason)
 
     # 상대 최선의 수
@@ -107,8 +111,10 @@ def make_move(req: MoveRequest):
 
     # 상대 수 후 스테일메이트 체크
     if board.is_stalemate():
+        endgame_move_total.labels(outcome="stalemate").inc()
         return MoveResponse(status="failed", fen=board.fen(), reason="stalemate")
 
+    endgame_move_total.labels(outcome="continue").inc()
     return MoveResponse(
         status="continue",
         fen=board.fen(),
