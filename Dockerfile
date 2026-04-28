@@ -9,7 +9,9 @@ RUN poetry install --no-root --no-directory
 
 COPY . .
 
+RUN useradd --create-home --shell /bin/bash app && chmod +x ./entrypoint.sh
+USER app
+
 EXPOSE 8000
 
-COPY entrypoint.sh .
 CMD ["./entrypoint.sh"]
