@@ -35,7 +35,7 @@ The opponent's moves are sourced directly from Syzygy tablebases, meaning every 
 | Database | MySQL 8.4 LTS |
 | ORM / Migration | SQLAlchemy + Alembic |
 | Package Manager | Poetry |
-| Infrastructure | Docker + Docker Compose |
+| Infrastructure | Docker (orchestrated via [ilovepawn/infra](https://github.com/ilovepawn/infra)) |
 
 ---
 
@@ -44,7 +44,7 @@ The opponent's moves are sourced directly from Syzygy tablebases, meaning every 
 ### Prerequisites
 
 - Python 3.13+
-- Docker & Docker Compose
+- A reachable MySQL 8.4 instance (run via [ilovepawn/infra](https://github.com/ilovepawn/infra) for the full stack)
 - [Syzygy 3-4-5 tablebase files](https://tablebase.lichess.ovh/tables/standard/) in `syzygy/`
 
 ### Run
@@ -53,15 +53,16 @@ The opponent's moves are sourced directly from Syzygy tablebases, meaning every 
 # Install dependencies
 poetry install
 
-# Start MySQL + API server
-docker compose up -d
-
-# Run database migration
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
+# Run database migration (adjust host/port to match your MySQL)
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
   poetry run alembic upgrade head
 
+# Run API server
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
+  poetry run uvicorn app.main:app --port 8000
+
 # Generate positions (combination, count)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
   poetry run python scripts/generate.py KQK 1000
 ```
 
@@ -152,7 +153,6 @@ zugzwang/
 ├── alembic/           # Database migrations
 ├── scripts/           # Position generation script
 ├── syzygy/            # Syzygy tablebase files (not tracked in git)
-├── docker-compose.yml
 ├── Dockerfile
 └── pyproject.toml
 ```

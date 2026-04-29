@@ -10,30 +10,23 @@ This is one microservice in the ilovepawn MSA architecture. It exposes REST APIs
 
 ## Commands
 
+Orchestration (MySQL + API container) lives in [`ilovepawn/infra`](https://github.com/ilovepawn/infra). This repo only contains the application + `Dockerfile` (image built by the infra stack). The commands below assume MySQL is reachable on the host — adjust `DATABASE_URL` to match the infra-side host/port mapping.
+
 ```bash
 # Install dependencies
 poetry install
 
-# Start MySQL + API server
-docker compose up -d
-
-# Start with rebuild
-docker compose up --build -d
-
-# Stop and remove volumes (full reset)
-docker compose down -v
-
-# Run DB migration (use port 3307 — host port mapped to container's 3306)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry run alembic upgrade head
+# Run DB migration
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang poetry run alembic upgrade head
 
 # Generate new migration after model changes
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry run alembic revision --autogenerate -m "description"
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang poetry run alembic revision --autogenerate -m "description"
 
 # Generate endgame positions (combination name + count)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry run python scripts/generate.py KQK 1000
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang poetry run python scripts/generate.py KQK 1000
 
 # Run API server locally (without Docker)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry run uvicorn app.main:app --port 8000
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang poetry run uvicorn app.main:app --port 8000
 ```
 
 ## Architecture
@@ -50,9 +43,8 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry ru
 
 - **Syzygy files** are in `syzygy/` (gitignored, ~1GB). Downloaded from `https://tablebase.lichess.ovh/tables/standard/`. Required for both the API server and the generation script.
 - **MySQL collation**: The `fen` column must use `utf8mb4_bin`, not the MySQL default `utf8mb4_0900_ai_ci`. The default is case-insensitive and treats `K` (White King) and `k` (Black King) as identical, causing false duplicate key errors.
-- **Docker port mapping**: MySQL container maps `3307:3306` because the host may already have MySQL on 3306. Inside Docker Compose, services connect via `db:3306`.
 - **WDL values** from Syzygy: 2 (win), 1 (cursed win), 0 (draw), -1 (blessed loss), -2 (loss). Only positions with WDL=2 are stored. The `/move` endpoint checks WDL from the side-to-move's perspective after the user's move.
-- **Docker startup**: `entrypoint.sh` runs `alembic upgrade head` before uvicorn. No need to manually run migrations.
+- **Container startup**: `entrypoint.sh` runs `alembic upgrade head` before uvicorn. No need to manually run migrations when running via the infra stack.
 - **DB connection pool**: `pool_pre_ping=True` is set to handle stale MySQL connections after idle periods.
 - **Tablebase startup check**: `app/service/tablebase.py` validates that syzygy files exist before opening. Missing files cause a clear error message and exit.
 - **Input validation**: `MoveRequest.fen` (max 100 chars), `MoveRequest.move` (max 5 chars). `MoveResponse.status` and `reason` use `Literal` types.

@@ -35,7 +35,7 @@
 | 데이터베이스 | MySQL 8.4 LTS |
 | ORM / 마이그레이션 | SQLAlchemy + Alembic |
 | 패키지 매니저 | Poetry |
-| 인프라 | Docker + Docker Compose |
+| 인프라 | Docker ([ilovepawn/infra](https://github.com/ilovepawn/infra)에서 오케스트레이션) |
 
 ---
 
@@ -44,7 +44,7 @@
 ### 사전 요구사항
 
 - Python 3.13+
-- Docker & Docker Compose
+- 접근 가능한 MySQL 8.4 인스턴스 (전체 스택은 [ilovepawn/infra](https://github.com/ilovepawn/infra)에서 실행)
 - [Syzygy 3-4-5 테이블베이스 파일](https://tablebase.lichess.ovh/tables/standard/)을 `syzygy/` 디렉토리에 배치
 
 ### 실행
@@ -53,15 +53,16 @@
 # 의존성 설치
 poetry install
 
-# MySQL + API 서버 실행
-docker compose up -d
-
-# 데이터베이스 마이그레이션
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
+# 데이터베이스 마이그레이션 (사용 중인 MySQL 호스트/포트에 맞게 조정)
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
   poetry run alembic upgrade head
 
+# API 서버 실행
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
+  poetry run uvicorn app.main:app --port 8000
+
 # 포지션 생성 (조합명, 개수)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
   poetry run python scripts/generate.py KQK 1000
 ```
 
@@ -152,7 +153,6 @@ zugzwang/
 ├── alembic/           # 데이터베이스 마이그레이션
 ├── scripts/           # 포지션 생성 스크립트
 ├── syzygy/            # Syzygy 테이블베이스 파일 (git 미추적)
-├── docker-compose.yml
 ├── Dockerfile
 └── pyproject.toml
 ```
