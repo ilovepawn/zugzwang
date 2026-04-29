@@ -10,7 +10,7 @@ app = FastAPI(
 
 app.include_router(endgame_router)
 
-Instrumentator().instrument(app).expose(app)
+Instrumentator(excluded_handlers=["/metrics", "/health"]).instrument(app).expose(app)
 
 
 @app.get("/health")
