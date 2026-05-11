@@ -57,7 +57,7 @@ The opponent's moves are sourced directly from Syzygy tablebases, meaning every 
 docker compose up -d
 ```
 
-This brings up MySQL (host port `3307`) and the API (`http://localhost:8000`). The API container joins `ilovepawn-net` so it can reach shared services (RabbitMQ, MinIO, Keycloak) from [ilovepawn/infra](https://github.com/ilovepawn/infra) by container name. Migrations run automatically on container startup.
+This brings up MySQL (host port `3307`) and the API (`http://localhost:8000`). The API container joins `ilovepawn-net` so it can reach other services on the shared network by container name. Migrations run automatically on container startup.
 
 ### Run locally (without Docker)
 

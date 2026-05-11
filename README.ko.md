@@ -57,7 +57,7 @@
 docker compose up -d
 ```
 
-MySQL(호스트 포트 `3307`)과 API(`http://localhost:8000`)가 함께 기동됩니다. API 컨테이너는 `ilovepawn-net`에 연결되어 [ilovepawn/infra](https://github.com/ilovepawn/infra)의 공용 서비스(RabbitMQ, MinIO, Keycloak)에 컨테이너명으로 접근할 수 있습니다. 마이그레이션은 컨테이너 기동 시 자동 실행됩니다.
+MySQL(호스트 포트 `3307`)과 API(`http://localhost:8000`)가 함께 기동됩니다. API 컨테이너는 `ilovepawn-net`에 연결되어 공용 네트워크 상의 다른 서비스에 컨테이너명으로 접근할 수 있습니다. 마이그레이션은 컨테이너 기동 시 자동 실행됩니다.
 
 ### 로컬 실행 (Docker 없이)
 
