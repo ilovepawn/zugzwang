@@ -35,7 +35,7 @@ The opponent's moves are sourced directly from Syzygy tablebases, meaning every 
 | Database | MySQL 8.4 LTS |
 | ORM / Migration | SQLAlchemy + Alembic |
 | Package Manager | Poetry |
-| Infrastructure | Docker (orchestrated via [ilovepawn/infra](https://github.com/ilovepawn/infra)) |
+| Infrastructure | Docker Compose (local) + shared services from [ilovepawn/infra](https://github.com/ilovepawn/infra) |
 
 ---
 
@@ -43,26 +43,38 @@ The opponent's moves are sourced directly from Syzygy tablebases, meaning every 
 
 ### Prerequisites
 
-- Python 3.13+
-- A reachable MySQL 8.4 instance (run via [ilovepawn/infra](https://github.com/ilovepawn/infra) for the full stack)
+- Docker + Docker Compose
+- Python 3.13+ (only required to run outside Docker)
 - [Syzygy 3-4-5 tablebase files](https://tablebase.lichess.ovh/tables/standard/) in `syzygy/`
+- The shared Docker network `ilovepawn-net` — create it once if it doesn't exist:
+  ```bash
+  docker network create ilovepawn-net
+  ```
 
-### Run
+### Run with Docker Compose (recommended)
+
+```bash
+docker compose up -d
+```
+
+This brings up MySQL (host port `3307`) and the API (`http://localhost:8000`). The API container joins `ilovepawn-net` so it can reach shared services (RabbitMQ, MinIO, Keycloak) from [ilovepawn/infra](https://github.com/ilovepawn/infra) by container name. Migrations run automatically on container startup.
+
+### Run locally (without Docker)
 
 ```bash
 # Install dependencies
 poetry install
 
-# Run database migration (adjust host/port to match your MySQL)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
+# Run database migration (against the dockerized MySQL on host port 3307)
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
   poetry run alembic upgrade head
 
 # Run API server
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
   poetry run uvicorn app.main:app --port 8000
 
 # Generate positions (combination, count)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
   poetry run python scripts/generate.py KQK 1000
 ```
 

@@ -35,7 +35,7 @@
 | 데이터베이스 | MySQL 8.4 LTS |
 | ORM / 마이그레이션 | SQLAlchemy + Alembic |
 | 패키지 매니저 | Poetry |
-| 인프라 | Docker ([ilovepawn/infra](https://github.com/ilovepawn/infra)에서 오케스트레이션) |
+| 인프라 | Docker Compose (로컬) + [ilovepawn/infra](https://github.com/ilovepawn/infra)의 공용 서비스 |
 
 ---
 
@@ -43,26 +43,38 @@
 
 ### 사전 요구사항
 
-- Python 3.13+
-- 접근 가능한 MySQL 8.4 인스턴스 (전체 스택은 [ilovepawn/infra](https://github.com/ilovepawn/infra)에서 실행)
+- Docker + Docker Compose
+- Python 3.13+ (Docker 없이 실행할 때만 필요)
 - [Syzygy 3-4-5 테이블베이스 파일](https://tablebase.lichess.ovh/tables/standard/)을 `syzygy/` 디렉토리에 배치
+- 공용 Docker 네트워크 `ilovepawn-net` — 없다면 한 번만 생성:
+  ```bash
+  docker network create ilovepawn-net
+  ```
 
-### 실행
+### Docker Compose 실행 (권장)
+
+```bash
+docker compose up -d
+```
+
+MySQL(호스트 포트 `3307`)과 API(`http://localhost:8000`)가 함께 기동됩니다. API 컨테이너는 `ilovepawn-net`에 연결되어 [ilovepawn/infra](https://github.com/ilovepawn/infra)의 공용 서비스(RabbitMQ, MinIO, Keycloak)에 컨테이너명으로 접근할 수 있습니다. 마이그레이션은 컨테이너 기동 시 자동 실행됩니다.
+
+### 로컬 실행 (Docker 없이)
 
 ```bash
 # 의존성 설치
 poetry install
 
-# 데이터베이스 마이그레이션 (사용 중인 MySQL 호스트/포트에 맞게 조정)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
+# 데이터베이스 마이그레이션 (호스트 포트 3307의 도커 MySQL 대상)
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
   poetry run alembic upgrade head
 
 # API 서버 실행
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
   poetry run uvicorn app.main:app --port 8000
 
 # 포지션 생성 (조합명, 개수)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3306/zugzwang \
+DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
   poetry run python scripts/generate.py KQK 1000
 ```
 
