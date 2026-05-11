@@ -1,3 +1,5 @@
+import logging
+
 import chess
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func
@@ -8,6 +10,8 @@ from app.model.position import EndgamePosition
 from app.schema.position import CombinationResponse, MoveRequest, MoveResponse, PositionResponse
 from app.service.metrics import endgame_move_total
 from app.service.move import OpponentMoveNotFound, PositionNotInTablebase, play_move
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -83,6 +87,7 @@ def make_move(req: MoveRequest):
     except PositionNotInTablebase:
         raise HTTPException(status_code=400, detail="Position not found in tablebase")
     except OpponentMoveNotFound:
+        logger.exception("OpponentMoveNotFound fen=%r move=%r", req.fen, req.move)
         raise HTTPException(status_code=500, detail="Failed to find opponent move")
 
     endgame_move_total.labels(outcome=result.outcome).inc()
