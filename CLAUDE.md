@@ -56,6 +56,7 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry ru
 - `scripts/generate.py` — Standalone script (uses pymysql directly, not SQLAlchemy ORM) that parses combination names like "KQK" or "KQKR" to determine piece placement, validates via tablebase, and inserts with `SELECT` dedup check before `INSERT`
 - `tests/test_move_api.py`, `tests/test_play_move.py` — pytest suite for `/move`. API tests hit `POST /move` via FastAPI `TestClient`; domain tests call `play_move()` directly. Both require the local Syzygy tablebase files (the `app.service.tablebase` module loads them at import time).
 - `tests/test_db_api.py` — pytest suite for DB-backed endpoints (`/combinations`, `/positions/random`, `/positions/{id}`). Uses the `client` fixture from `tests/conftest.py` which swaps SQLAlchemy to in-memory SQLite via `app.dependency_overrides[get_db]`. The conftest registers a `utf8mb4_bin` collation and a `rand()` function on the SQLite connection so the production model and `func.rand()` query work unchanged.
+- `.github/workflows/test.yml` — CI on every push/PR. Installs deps, downloads 3-piece Syzygy (≈56KB, cached) from lichess CDN, runs `pytest`. Uses `DATABASE_URL=sqlite:///dummy` since real DB is overridden in tests.
 
 ## Key Technical Details
 

@@ -1,0 +1,51 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: pipx install poetry==2.3.4
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: poetry-${{ runner.os }}-py3.13-${{ hashFiles('poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install --with dev --no-interaction
+
+      - name: Cache Syzygy 3-piece tablebase
+        id: syzygy-cache
+        uses: actions/cache@v4
+        with:
+          path: syzygy
+          key: syzygy-3piece-v1
+
+      - name: Download 3-piece Syzygy tablebase
+        if: steps.syzygy-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p syzygy
+          wdl="https://tablebase.lichess.ovh/tables/standard/3-4-5-wdl"
+          dtz="https://tablebase.lichess.ovh/tables/standard/3-4-5-dtz"
+          for piece in KBvK KNvK KPvK KQvK KRvK; do
+            curl -sSfL "$wdl/$piece.rtbw" -o "syzygy/$piece.rtbw"
+            curl -sSfL "$dtz/$piece.rtbz" -o "syzygy/$piece.rtbz"
+          done
+
+      - name: Run pytest
+        env:
+          DATABASE_URL: sqlite:///dummy
+        run: poetry run pytest -v
