@@ -11,7 +11,7 @@
 
 **Endgame Trainer API** for the [ilovepawn](https://github.com/ilovepawn) chess platform, powered by Syzygy endgame tablebases.
 
-Train your endgame technique against a perfectly playing opponent. Every response is mathematically optimal — backed by 5-piece Syzygy tablebases containing over 14,000 pre-validated winning positions.
+Train your endgame technique against a perfectly playing opponent. Every response is mathematically optimal — backed by 5-piece Syzygy tablebases.
 
 ---
 
@@ -148,9 +148,11 @@ Submit a move and receive the judgment + opponent's response.
 
 ---
 
-## Supported Combinations
+## Combination Format
 
-| Category | Combinations | Description |
+The generator accepts any string of the form `K[pieces]K[pieces]` where pieces are drawn from `Q R B N P`. Common examples:
+
+| Category | Examples | Description |
 |---|---|---|
 | Basic Checkmate | KQK, KRK, KBBK, KBNK, KRRK, KQRK | Deliver checkmate with major/minor pieces |
 | Queen vs Piece | KQKR, KQKB, KQKN | Win with queen against a single defender |
