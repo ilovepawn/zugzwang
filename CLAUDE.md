@@ -66,7 +66,7 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry ru
 - **Container startup**: `entrypoint.sh` runs `alembic upgrade head` before uvicorn. No need to manually run migrations when running via `docker compose up`.
 - **DB connection pool**: `pool_pre_ping=True` is set to handle stale MySQL connections after idle periods.
 - **Tablebase startup check**: `app/service/tablebase.py` validates that syzygy files exist before opening. Missing files cause a clear error message and exit.
-- **Input validation**: `MoveRequest.fen` (max 100 chars), `MoveRequest.move` (max 5 chars). `MoveResponse.status` and `reason` use `Literal` types.
+- **Input validation**: `MoveRequest.fen` (max 100 chars), `MoveRequest.move` (max 5 chars). `MoveResponse.status` and `reason` use `Literal` types. `/positions/random` validates `combination` via FastAPI `Query(..., max_length=10, pattern=r"^[KQRBNPkqrbnp]+$")` before the `.upper()` normalization.
 - **`pymysql[rsa]` extras**: MySQL 8.x default authentication (`caching_sha2_password`) requires `cryptography`, which `pymysql` only pulls in via the `[rsa]` extras. Do not strip the brackets when editing `pyproject.toml`.
 - **Poetry package mode**: `pyproject.toml` sets `[tool.poetry] package-mode = false`. The project's import root is `app/`, not `zugzwang/`, so Poetry's package autodetection would fail. Setting `package-mode = false` uses Poetry purely for dependency management — no wheel build, no "No file/folder found for package zugzwang" error.
 - **Pytest configuration**: `pyproject.toml` includes `[tool.pytest.ini_options]` with `testpaths = ["tests"]` and `pythonpath = ["."]` so `from app.main import app` resolves. `tests/conftest.py` carries DB fixtures (SQLite in-memory + dialect adapters).
