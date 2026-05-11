@@ -39,14 +39,13 @@ def best_opponent_move(board: chess.Board) -> chess.Move | None:
                 with _tablebase_lock:
                     dtz = tablebase.probe_dtz(board)
             except KeyError:
-                board.pop()
                 continue
+            finally:
+                board.pop()
 
             # 흑 입장: DTZ가 가장 큰 수(가장 오래 버티는 수)가 최선
             if best_dtz is None or dtz > best_dtz:
                 best_dtz = dtz
                 best_move = move
-
-            board.pop()
 
         return best_move
