@@ -1,5 +1,5 @@
 import chess
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -23,7 +23,10 @@ def get_combinations(db: Session = Depends(get_db)):
 
 
 @router.get("/positions/random", response_model=PositionResponse)
-def get_random_position(combination: str, db: Session = Depends(get_db)):
+def get_random_position(
+    combination: str = Query(..., max_length=10, pattern=r"^[KQRBNPkqrbnp]+$"),
+    db: Session = Depends(get_db),
+):
     position = (
         db.query(EndgamePosition)
         .filter_by(combination=combination.upper())
