@@ -78,6 +78,15 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
   poetry run python scripts/generate.py KQK 1000
 ```
 
+### Running tests
+
+```bash
+poetry install --with dev
+poetry run pytest
+```
+
+The test suite uses the local Syzygy tablebase files, so make sure `syzygy/` is populated before running.
+
 ---
 
 ## API Reference
@@ -164,6 +173,7 @@ zugzwang/
 │   └── main.py        # FastAPI entrypoint
 ├── alembic/           # Database migrations
 ├── scripts/           # Position generation script
+├── tests/             # pytest suite (API + domain)
 ├── syzygy/            # Syzygy tablebase files (not tracked in git)
 ├── Dockerfile
 └── pyproject.toml

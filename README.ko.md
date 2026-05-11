@@ -78,6 +78,15 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
   poetry run python scripts/generate.py KQK 1000
 ```
 
+### 테스트 실행
+
+```bash
+poetry install --with dev
+poetry run pytest
+```
+
+테스트는 로컬 Syzygy 테이블베이스 파일을 사용하므로 `syzygy/` 디렉토리가 채워져 있어야 합니다.
+
 ---
 
 ## API 문서
@@ -164,6 +173,7 @@ zugzwang/
 │   └── main.py        # FastAPI 진입점
 ├── alembic/           # 데이터베이스 마이그레이션
 ├── scripts/           # 포지션 생성 스크립트
+├── tests/             # pytest 테스트 (API + 도메인)
 ├── syzygy/            # Syzygy 테이블베이스 파일 (git 미추적)
 ├── Dockerfile
 └── pyproject.toml
