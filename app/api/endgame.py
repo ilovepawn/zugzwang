@@ -91,13 +91,20 @@ def make_move(req: MoveRequest):
         endgame_move_total.labels(outcome="stalemate").inc()
         return MoveResponse(status="failed", fen=board.fen(), reason="stalemate")
 
-    # 테이블베이스로 WDL 조회 (흑 관점이므로 부호 반전)
+    # 기물 부족 무승부 확인
+    if board.is_insufficient_material():
+        endgame_move_total.labels(outcome="draw").inc()
+        return MoveResponse(status="failed", fen=board.fen(), reason="draw")
+
+    # 테이블베이스로 WDL 조회 (사용자 수 후이므로 흑 관점)
     try:
         wdl = probe_wdl(board)
     except KeyError:
         raise HTTPException(status_code=400, detail="Position not found in tablebase")
 
-    if wdl >= 0:
+    # 흑 관점 WDL == -2 (clean loss)만 계속 진행. WDL == -1(blessed loss)은
+    # 사용자가 cursed win 상태 → 50수룰로 무승부 가능 → advantage 잃음으로 분류.
+    if wdl > -2:
         reason = "draw" if wdl == 0 else "lost"
         endgame_move_total.labels(outcome=reason).inc()
         return MoveResponse(status="failed", fen=board.fen(), reason=reason)
@@ -113,6 +120,11 @@ def make_move(req: MoveRequest):
     if board.is_stalemate():
         endgame_move_total.labels(outcome="stalemate").inc()
         return MoveResponse(status="failed", fen=board.fen(), reason="stalemate")
+
+    # 상대 수 후 기물 부족 무승부 체크
+    if board.is_insufficient_material():
+        endgame_move_total.labels(outcome="draw").inc()
+        return MoveResponse(status="failed", fen=board.fen(), reason="draw")
 
     endgame_move_total.labels(outcome="continue").inc()
     return MoveResponse(

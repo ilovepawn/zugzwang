@@ -43,7 +43,7 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry ru
 **API layer** (`app/api/`) → **Schema layer** (`app/schema/`) → **Service layer** (`app/service/`) → **Model layer** (`app/model/`)
 
 - `app/api/endgame.py` — Four endpoints: `GET /combinations`, `GET /positions/random`, `GET /positions/{position_id}`, `POST /move`
-- `app/service/tablebase.py` — Opens Syzygy tablebase at startup (module-level singleton). Provides `probe_wdl()` and `best_opponent_move()` which iterates all legal moves and picks the one with highest DTZ (longest defense)
+- `app/service/tablebase.py` — Opens Syzygy tablebase at startup (module-level singleton). Provides `probe_wdl()` and `best_opponent_move()` which iterates all legal moves and picks the one with highest DTZ (longest defense). All probe calls are serialized through a module-level `threading.Lock` because `chess.syzygy.Tablebase` is not thread-safe and FastAPI sync routes are dispatched to a thread pool.
 - `app/service/metrics.py` — Prometheus domain metrics: `tablebase_operation_seconds` Histogram (labeled by `operation`) and `endgame_move_total` Counter (labeled by `outcome`)
 - `app/model/position.py` — Single table `endgame_position` with `fen` column using `utf8mb4_bin` collation (case-sensitive, required because FEN uses case to distinguish White/Black pieces)
 - `scripts/generate.py` — Standalone script (uses pymysql directly, not SQLAlchemy ORM) that parses combination names like "KQK" or "KQKR" to determine piece placement, validates via tablebase, and inserts with `SELECT` dedup check before `INSERT`
@@ -52,7 +52,7 @@ DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry ru
 
 - **Syzygy files** are in `syzygy/` (gitignored, ~1GB). Downloaded from `https://tablebase.lichess.ovh/tables/standard/`. Required for both the API server and the generation script.
 - **MySQL collation**: The `fen` column must use `utf8mb4_bin`, not the MySQL default `utf8mb4_0900_ai_ci`. The default is case-insensitive and treats `K` (White King) and `k` (Black King) as identical, causing false duplicate key errors.
-- **WDL values** from Syzygy: 2 (win), 1 (cursed win), 0 (draw), -1 (blessed loss), -2 (loss). Only positions with WDL=2 are stored. The `/move` endpoint checks WDL from the side-to-move's perspective after the user's move.
+- **WDL values** from Syzygy: 2 (win), 1 (cursed win), 0 (draw), -1 (blessed loss), -2 (loss). Only positions with WDL=2 are stored. After the user's move, `/move` probes WDL from the side-to-move's perspective (Black). Only `WDL == -2` (clean loss for Black = clean win for White) continues the game — `WDL == -1` is treated as `failed/lost` because the user is now in cursed-win territory where the 50-move rule reduces it to a draw, so the winning advantage is effectively gone.
 - **Container startup**: `entrypoint.sh` runs `alembic upgrade head` before uvicorn. No need to manually run migrations when running via `docker compose up`.
 - **DB connection pool**: `pool_pre_ping=True` is set to handle stale MySQL connections after idle periods.
 - **Tablebase startup check**: `app/service/tablebase.py` validates that syzygy files exist before opening. Missing files cause a clear error message and exit.

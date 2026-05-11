@@ -1,5 +1,6 @@
 import os
 import sys
+import threading
 
 import chess
 import chess.syzygy
@@ -15,11 +16,15 @@ if not os.path.isdir(settings.syzygy_path) or not any(
     sys.exit(1)
 
 tablebase = chess.syzygy.open_tablebase(settings.syzygy_path)
+# chess.syzygy.Tablebase는 thread-safe하지 않음. sync 라우트가 starlette
+# threadpool에서 병렬 호출되므로 모든 probe 호출을 단일 락으로 직렬화.
+_tablebase_lock = threading.Lock()
 
 
 def probe_wdl(board: chess.Board) -> int:
     with tablebase_operation_seconds.labels(operation="probe_wdl").time():
-        return tablebase.probe_wdl(board)
+        with _tablebase_lock:
+            return tablebase.probe_wdl(board)
 
 
 def best_opponent_move(board: chess.Board) -> chess.Move | None:
@@ -31,7 +36,8 @@ def best_opponent_move(board: chess.Board) -> chess.Move | None:
         for move in board.legal_moves:
             board.push(move)
             try:
-                dtz = tablebase.probe_dtz(board)
+                with _tablebase_lock:
+                    dtz = tablebase.probe_dtz(board)
             except KeyError:
                 board.pop()
                 continue
