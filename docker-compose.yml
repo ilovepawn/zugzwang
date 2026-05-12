@@ -35,6 +35,7 @@ services:
       MYSQL_PASSWORD: zugzwang
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
       interval: 5s
@@ -43,6 +44,24 @@ services:
       start_period: 30s
     networks:
       - zugzwang-internal
+    restart: unless-stopped
+
+  mysql-exporter:
+    image: prom/mysqld-exporter:v0.15.1
+    command:
+      - "--mysqld.address=db:3306"
+      - "--mysqld.username=exporter"
+      - "--no-collect.slave_status"
+    environment:
+      MYSQLD_EXPORTER_PASSWORD: exporter
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      ilovepawn-net:
+        aliases:
+          - zugzwang-mysql-exporter
+      zugzwang-internal: {}
     restart: unless-stopped
 
 volumes:
