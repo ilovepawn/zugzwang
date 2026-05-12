@@ -41,3 +41,22 @@ def test_play_move_opponent_move_not_found(monkeypatch):
     board = chess.Board("8/8/8/8/4k3/8/4K3/4Q3 w - - 0 1")
     with pytest.raises(OpponentMoveNotFound):
         play_move(board, chess.Move.from_uci("e1a1"))
+
+
+def test_play_move_draw_when_wdl_zero(monkeypatch):
+    # 흑 관점 WDL == 0 → 사용자 한 수로 무승부 영역 진입.
+    monkeypatch.setattr(move_module, "probe_wdl", lambda _: 0)
+    board = chess.Board("8/8/8/8/4k3/8/4K3/4Q3 w - - 0 1")
+    result = play_move(board, chess.Move.from_uci("e1a1"))
+    assert result.outcome == "draw"
+    assert result.opponent_move is None
+
+
+def test_play_move_lost_when_wdl_cursed(monkeypatch):
+    # 흑 관점 WDL == -1 (blessed loss = 우리 측 cursed win) → 50수룰로 사실상 무승부,
+    # 승위 잃음으로 분류.
+    monkeypatch.setattr(move_module, "probe_wdl", lambda _: -1)
+    board = chess.Board("8/8/8/8/4k3/8/4K3/4Q3 w - - 0 1")
+    result = play_move(board, chess.Move.from_uci("e1a1"))
+    assert result.outcome == "lost"
+    assert result.opponent_move is None

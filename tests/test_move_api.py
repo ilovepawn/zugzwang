@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.service import move as move_module
 
 client = TestClient(app)
 
@@ -109,3 +110,29 @@ def test_request_move_too_long_returns_422():
         json={"fen": "4k3/8/4K3/8/8/8/8/7R w - - 0 1", "move": "e2e4q!"},
     )
     assert response.status_code == 422
+
+
+def test_draw_outcome_returns_failed(monkeypatch):
+    monkeypatch.setattr(move_module, "probe_wdl", lambda _: 0)
+    response = client.post(
+        "/move",
+        json={"fen": "8/8/8/8/4k3/8/4K3/4Q3 w - - 0 1", "move": "e1a1"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "failed"
+    assert body["reason"] == "draw"
+    assert body.get("opponentMove") is None
+
+
+def test_lost_outcome_returns_failed(monkeypatch):
+    monkeypatch.setattr(move_module, "probe_wdl", lambda _: -1)
+    response = client.post(
+        "/move",
+        json={"fen": "8/8/8/8/4k3/8/4K3/4Q3 w - - 0 1", "move": "e1a1"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "failed"
+    assert body["reason"] == "lost"
+    assert body.get("opponentMove") is None
