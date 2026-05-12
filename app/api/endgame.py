@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.model.position import EndgamePosition
 from app.schema.position import CombinationResponse, MoveRequest, MoveResponse, PositionResponse
-from app.service.metrics import endgame_move_total
+from app.service.metrics import endgame_move_errors_total, endgame_move_total
 from app.service.move import OpponentMoveNotFound, PositionNotInTablebase, play_move
 
 logger = logging.getLogger(__name__)
@@ -85,8 +85,10 @@ def make_move(req: MoveRequest):
     try:
         result = play_move(board, move)
     except PositionNotInTablebase:
+        endgame_move_errors_total.labels(reason="position_not_in_tablebase").inc()
         raise HTTPException(status_code=400, detail="Position not found in tablebase")
     except OpponentMoveNotFound:
+        endgame_move_errors_total.labels(reason="opponent_move_not_found").inc()
         logger.exception("OpponentMoveNotFound fen=%r move=%r", req.fen, req.move)
         raise HTTPException(status_code=500, detail="Failed to find opponent move")
 
