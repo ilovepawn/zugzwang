@@ -1,4 +1,7 @@
+import os
 import random
+
+os.environ.setdefault("DATABASE_URL", "sqlite:///dummy")
 
 import pytest
 from fastapi.testclient import TestClient
