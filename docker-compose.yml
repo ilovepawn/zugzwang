@@ -8,8 +8,8 @@ services:
     volumes:
       - ./syzygy:/app/syzygy
     environment:
-      - DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@db:3306/zugzwang
-      - SYZYGY_PATH=syzygy
+      DATABASE_URL: mysql+pymysql://zugzwang:zugzwang@db:3306/zugzwang
+      SYZYGY_PATH: syzygy
     depends_on:
       db:
         condition: service_healthy
@@ -18,8 +18,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 30s
     networks:
-      - ilovepawn-net
+      ilovepawn-net:
+        aliases:
+          - zugzwang-api
+      zugzwang-internal: {}
     restart: unless-stopped
 
   db:
@@ -40,7 +44,7 @@ services:
       retries: 10
       start_period: 30s
     networks:
-      - ilovepawn-net
+      - zugzwang-internal
     restart: unless-stopped
 
 volumes:
@@ -49,3 +53,6 @@ volumes:
 networks:
   ilovepawn-net:
     external: true
+  zugzwang-internal:
+    driver: bridge
+    internal: true
