@@ -10,7 +10,7 @@ This is one microservice in the ilovepawn MSA architecture. It exposes REST APIs
 
 ## Commands
 
-Infra split: shared services (RabbitMQ, MinIO, Keycloak) live in [`ilovepawn/infra`](https://github.com/ilovepawn/infra) on the external Docker network `ilovepawn-net`. The zugzwang-local `docker-compose.yml` splits networking into two: the API attaches to both `ilovepawn-net` (for cross-stack reach) and a private `zugzwang-internal` (`internal: true`) network, while the DB attaches only to `zugzwang-internal`. This enforces database-per-service isolation at the network level — other ilovepawn services cannot connect to the zugzwang DB container. The DB has no host port mapping either: `internal: true` blocks host port publish along with external egress, so DB inspection and dev workflows run through `docker exec` against the api/db containers.
+Infra split: shared services (RabbitMQ, MinIO, Keycloak) live in [`ilovepawn/infra`](https://github.com/ilovepawn/infra) on the external Docker network `ilovepawn-net`. The zugzwang-local `docker-compose.yml` splits networking into two: the API and `mysql-exporter` attach to both `ilovepawn-net` (for cross-stack reach) and a private `zugzwang-internal` (`internal: true`) network, while the DB attaches only to `zugzwang-internal`. This enforces database-per-service isolation at the network level — other ilovepawn services cannot connect to the zugzwang DB container. The DB has no host port mapping either: `internal: true` blocks host port publish along with external egress, so DB inspection and dev workflows run through `docker exec` against the api/db containers. The DB metrics path follows the same rule: the central Prometheus in `ilovepawn/infra` scrapes `zugzwang-mysql-exporter:9104` on `ilovepawn-net`, and the exporter is the only process that holds an `ilovepawn-net`↔DB bridge.
 
 The `ilovepawn-net` network is declared `external: true` in every compose file and is not created by any of them. Create it once before bringing any stack up:
 
@@ -19,7 +19,7 @@ docker network create ilovepawn-net
 ```
 
 ```bash
-# Bring up local stack (api + db) — connects to ilovepawn-net
+# Bring up local stack (api + db + mysql-exporter) — connects to ilovepawn-net
 docker compose up -d
 
 # Install dev dependencies (pytest, httpx) for running tests on the host
@@ -41,6 +41,10 @@ docker exec ilovepawn-zugzwang-api-1 python scripts/generate.py KQK 1000
 
 # Inspect the DB directly
 docker exec -it ilovepawn-zugzwang-db-1 mysql -uzugzwang -pzugzwang zugzwang
+
+# One-time exporter user setup (only for pre-existing mysql_data volumes;
+# fresh volumes get it automatically from /docker-entrypoint-initdb.d)
+docker exec -i ilovepawn-zugzwang-db-1 mysql -uroot -proot < db/init/01-exporter.sql
 ```
 
 ## Architecture
@@ -73,5 +77,6 @@ docker exec -it ilovepawn-zugzwang-db-1 mysql -uzugzwang -pzugzwang zugzwang
 - **Pytest configuration**: `pyproject.toml` includes `[tool.pytest.ini_options]` with `testpaths = ["tests"]` and `pythonpath = ["."]` so `from app.main import app` resolves. `tests/conftest.py` carries DB fixtures (SQLite in-memory + dialect adapters).
 - **Global exception handler & logging**: `app/main.py` configures `logging.basicConfig` and registers `@app.exception_handler(Exception)` that logs the traceback with the request method/path before returning a generic 500. The `/move` controller additionally logs FEN/move context on `OpponentMoveNotFound`.
 - **Prometheus metrics**: `prometheus-fastapi-instrumentator` exposes `/metrics` and auto-collects HTTP request count/latency/in-progress. `/metrics` and `/health` are passed to `excluded_handlers` so scrape and health-check traffic don't pollute the HTTP metrics. Custom domain metrics in `app/service/metrics.py`: `tablebase_operation_seconds` uses sub-millisecond buckets `(0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0)` because Syzygy probes complete in microseconds — the prometheus_client default buckets (starting at 5ms) collapse all measurements into one bucket and make quantiles meaningless. `endgame_move_total` is labeled by outcome (`checkmate`, `continue`, `stalemate`, `draw`, `lost`).
+- **MySQL metrics (`mysql-exporter` sidecar)**: `prom/mysqld-exporter:v0.15.1` runs alongside the DB and exposes MySQL metrics on `:9104/metrics` under the `ilovepawn-net` alias `zugzwang-mysql-exporter`. The exporter is the only component dual-homed on `ilovepawn-net` *and* `zugzwang-internal` — central Prometheus stays out of the private DB network, and the DB stays out of `ilovepawn-net`. It authenticates with a dedicated `exporter` MySQL user (read-only: `PROCESS, REPLICATION CLIENT, SELECT`, `MAX_USER_CONNECTIONS 3`) so the application's `zugzwang` credentials never leave the API container. The user is provisioned by `db/init/01-exporter.sql` via `/docker-entrypoint-initdb.d/` — that path **only fires on fresh volume init**, so any pre-existing `mysql_data` volume needs the manual one-shot shown in the Commands section. Password is hardcoded (`exporter`) on purpose: the exporter is unreachable from outside the two private networks, and the value matches the existing `zugzwang/zugzwang` plaintext convention for local dev. The `slave_status` scraper is disabled (`--no-collect.slave_status`) because MySQL 8.4 renamed `SHOW SLAVE STATUS` → `SHOW REPLICA STATUS` and mysqld_exporter v0.15.1 still emits the legacy syntax; leaving it enabled produces a recurring `Error 1064` per scrape. We don't run replication, so the scraper provides no useful signal anyway.
 - **Commit messages**: English, conventional commit style (feat/fix/chore/docs).
 - **License**: GPL-3.0-or-later (required by python-chess dependency).
