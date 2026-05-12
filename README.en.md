@@ -1,5 +1,6 @@
 # Zugzwang
 
+[![CI](https://github.com/ilovepawn/zugzwang/actions/workflows/test.yml/badge.svg)](https://github.com/ilovepawn/zugzwang/actions/workflows/test.yml)
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
@@ -58,6 +59,8 @@ docker compose up -d
 ```
 
 This brings up MySQL and the API (`http://localhost:8000`). The API container joins `ilovepawn-net` so it can reach other services on the shared network by container name. Migrations run automatically on container startup.
+
+Interactive API docs are available at [`http://localhost:8000/docs`](http://localhost:8000/docs) (Swagger UI) or [`http://localhost:8000/redoc`](http://localhost:8000/redoc) (ReDoc).
 
 ### Running tests
 

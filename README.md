@@ -1,5 +1,6 @@
 # Zugzwang
 
+[![CI](https://github.com/ilovepawn/zugzwang/actions/workflows/test.yml/badge.svg)](https://github.com/ilovepawn/zugzwang/actions/workflows/test.yml)
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
@@ -58,6 +59,8 @@ docker compose up -d
 ```
 
 MySQL과 API(`http://localhost:8000`)가 함께 기동됩니다. API 컨테이너는 `ilovepawn-net`에 연결되어 공용 네트워크 상의 다른 서비스에 컨테이너명으로 접근할 수 있습니다. 마이그레이션은 컨테이너 기동 시 자동 실행됩니다.
+
+인터랙티브 API 문서는 [`http://localhost:8000/docs`](http://localhost:8000/docs) (Swagger UI) 또는 [`http://localhost:8000/redoc`](http://localhost:8000/redoc) (ReDoc)에서 확인할 수 있습니다.
 
 ### 테스트 실행
 
