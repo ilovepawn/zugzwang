@@ -57,26 +57,7 @@ The opponent's moves are sourced directly from Syzygy tablebases, meaning every 
 docker compose up -d
 ```
 
-This brings up MySQL (host port `3307`) and the API (`http://localhost:8000`). The API container joins `ilovepawn-net` so it can reach other services on the shared network by container name. Migrations run automatically on container startup.
-
-### Run locally (without Docker)
-
-```bash
-# Install dependencies
-poetry install
-
-# Run database migration (against the dockerized MySQL on host port 3307)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
-  poetry run alembic upgrade head
-
-# Run API server
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
-  poetry run uvicorn app.main:app --port 8000
-
-# Generate positions (combination, count)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
-  poetry run python scripts/generate.py KQK 1000
-```
+This brings up MySQL and the API (`http://localhost:8000`). The API container joins `ilovepawn-net` so it can reach other services on the shared network by container name. Migrations run automatically on container startup.
 
 ### Running tests
 

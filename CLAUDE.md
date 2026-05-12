@@ -10,7 +10,7 @@ This is one microservice in the ilovepawn MSA architecture. It exposes REST APIs
 
 ## Commands
 
-Infra split: shared services (RabbitMQ, MinIO, Keycloak) live in [`ilovepawn/infra`](https://github.com/ilovepawn/infra) on the external Docker network `ilovepawn-net`. The zugzwang-local `docker-compose.yml` splits networking into two: the API attaches to both `ilovepawn-net` (for cross-stack reach) and a private `zugzwang-internal` (`internal: true`) network, while the DB attaches only to `zugzwang-internal`. This enforces database-per-service isolation at the network level — other ilovepawn services cannot connect to the zugzwang DB container. The MySQL container is still exposed on host port `3307` for local tooling (host port mapping is independent of inter-container isolation).
+Infra split: shared services (RabbitMQ, MinIO, Keycloak) live in [`ilovepawn/infra`](https://github.com/ilovepawn/infra) on the external Docker network `ilovepawn-net`. The zugzwang-local `docker-compose.yml` splits networking into two: the API attaches to both `ilovepawn-net` (for cross-stack reach) and a private `zugzwang-internal` (`internal: true`) network, while the DB attaches only to `zugzwang-internal`. This enforces database-per-service isolation at the network level — other ilovepawn services cannot connect to the zugzwang DB container. The DB has no host port mapping either: `internal: true` blocks host port publish along with external egress, so DB inspection and dev workflows run through `docker exec` against the api/db containers.
 
 The `ilovepawn-net` network is declared `external: true` in every compose file and is not created by any of them. Create it once before bringing any stack up:
 
@@ -22,26 +22,25 @@ docker network create ilovepawn-net
 # Bring up local stack (api + db) — connects to ilovepawn-net
 docker compose up -d
 
-# Install dependencies (for running outside Docker)
-poetry install
-
-# Install with dev dependencies (pytest, httpx) for running tests
+# Install dev dependencies (pytest, httpx) for running tests on the host
 poetry install --with dev
 
-# Run tests
+# Run tests (uses sqlite in-memory via conftest.py — no DB container needed)
 poetry run pytest
 
-# Run DB migration against the dockerized MySQL on host port 3307
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry run alembic upgrade head
+# Apply DB migrations (entrypoint.sh runs this automatically on `docker compose up`;
+# this is for manual re-runs)
+docker exec ilovepawn-zugzwang-api-1 alembic upgrade head
 
-# Generate new migration after model changes
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry run alembic revision --autogenerate -m "description"
+# Generate new migration after model changes (the file lands inside the container;
+# `docker cp` it back to host alembic/versions/ or bind-mount the directory)
+docker exec ilovepawn-zugzwang-api-1 alembic revision --autogenerate -m "description"
 
 # Generate endgame positions (combination name + count)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry run python scripts/generate.py KQK 1000
+docker exec ilovepawn-zugzwang-api-1 python scripts/generate.py KQK 1000
 
-# Run API server locally (without Docker)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang poetry run uvicorn app.main:app --port 8000
+# Inspect the DB directly
+docker exec -it ilovepawn-zugzwang-db-1 mysql -uzugzwang -pzugzwang zugzwang
 ```
 
 ## Architecture

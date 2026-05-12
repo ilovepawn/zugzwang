@@ -57,26 +57,7 @@
 docker compose up -d
 ```
 
-MySQL(호스트 포트 `3307`)과 API(`http://localhost:8000`)가 함께 기동됩니다. API 컨테이너는 `ilovepawn-net`에 연결되어 공용 네트워크 상의 다른 서비스에 컨테이너명으로 접근할 수 있습니다. 마이그레이션은 컨테이너 기동 시 자동 실행됩니다.
-
-### 로컬 실행 (Docker 없이)
-
-```bash
-# 의존성 설치
-poetry install
-
-# 데이터베이스 마이그레이션 (호스트 포트 3307의 도커 MySQL 대상)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
-  poetry run alembic upgrade head
-
-# API 서버 실행
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
-  poetry run uvicorn app.main:app --port 8000
-
-# 포지션 생성 (조합명, 개수)
-DATABASE_URL=mysql+pymysql://zugzwang:zugzwang@localhost:3307/zugzwang \
-  poetry run python scripts/generate.py KQK 1000
-```
+MySQL과 API(`http://localhost:8000`)가 함께 기동됩니다. API 컨테이너는 `ilovepawn-net`에 연결되어 공용 네트워크 상의 다른 서비스에 컨테이너명으로 접근할 수 있습니다. 마이그레이션은 컨테이너 기동 시 자동 실행됩니다.
 
 ### 테스트 실행
 
